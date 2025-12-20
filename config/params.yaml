@@ -1,0 +1,16 @@
+model:
+  name: "Raw SVI"
+  n_params: 5
+  
+  # Initial guess for [a, b, rho, m, sigma]
+  initial_guess: [0.01, 0.1, -0.5, 0.0, 0.1]
+  bounds:
+    # a (min variance level), b (slope), rho (skew), m (location), sigma (curvature)
+    lower: [1e-4, 1e-4, -0.99, -1.0, 1e-3]
+    upper: [0.5, 1.0, 0.99, 1.0, 0.5]
+
+data:
+  # Market simulation settings
+  noise_level: 0.0005 
+  n_points: 30
+  strike_range: [-0.4, 0.4] # log-strikes

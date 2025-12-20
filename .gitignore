@@ -1,0 +1,40 @@
+# Keep the directory, ignore the files
+reports/figures/*
+!reports/figures/.gitkeep
+reports/logs/*
+!reports/logs/.gitkeep
+.pytest_cache/
+.ruff_cache/
+references/
+
+# --- Python & Environment ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# --- Poetry ---
+.python-version
+
+# --- Jupyter Notebooks ---
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# --- Editor / IDE ---
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
