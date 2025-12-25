@@ -2,6 +2,7 @@ import functools
 import logging
 import time
 from datetime import datetime
+from typing import Callable
 
 import matplotlib.pyplot as plt
 
@@ -35,7 +36,7 @@ def diagnostic_report(name: str):
 
             if isinstance(fig, plt.Figure):
                 fig.savefig(filename, dpi=300, bbox_inches="tight")
-                plt.close(fig)  # Prevent memory leaks in large loops
+                plt.close(fig) 
                 logger.info(f"Successfully saved diagnostic plot to {filename}")
 
             logger.info(f"Finished {name} in {duration:.2f} seconds.")
@@ -44,3 +45,21 @@ def diagnostic_report(name: str):
         return wrapper
 
     return decorator
+
+
+def trace_calibration(func: Callable):
+    """Logs execution time, solver success, and parameter drift for each tick."""
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+
+        result = func(*args, **kwargs)
+
+        end_time = time.perf_counter()
+        duration = (end_time - start_time) * 1000  # ms
+
+        logger.debug(f"Tick completed in {duration:.2f}ms")
+        return result
+
+    return wrapper

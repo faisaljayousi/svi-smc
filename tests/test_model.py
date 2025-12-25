@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.model import forward_model
+from core.model import forward_model
 
 
 def test_svi_non_negativity():
