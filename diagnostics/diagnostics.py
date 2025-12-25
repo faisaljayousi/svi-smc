@@ -3,15 +3,17 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.calibrate import calibrate_svi_ls
-from src.decorators import diagnostic_report
-from src.model import forward_model, svi_slope
+from src.core.calibrate import SVICalibrator
+from src.core.model import forward_model, svi_slope
+from src.utils.decorators import diagnostic_report
 
 logger = logging.getLogger(__name__)
 
 
 @diagnostic_report("Rho Instability")
 def diagnostic_instability(cfg):
+    calibrator = SVICalibrator(cfg, method="tikhonov")
+
     n_ticks = 100
     ks = np.linspace(
         cfg.data.strike_range[0], cfg.data.strike_range[1], cfg.data.n_points
@@ -19,14 +21,11 @@ def diagnostic_instability(cfg):
     true_params = [0.04, 0.1, -0.7, 0.0, 0.1]
     ls_rho_history = []
 
-    bounds = (cfg.model.bounds.lower, cfg.model.bounds.upper)
-    initial_guess = np.array(cfg.model.initial_guess)
-
-    for i in range(n_ticks):
+    for _ in range(n_ticks):
         market_w = forward_model(ks, *true_params) + np.random.normal(
             0, cfg.data.noise_level, len(ks)
         )
-        fitted, _ = calibrate_svi_ls(ks, market_w, initial_guess, bounds)
+        fitted = calibrator.calibrate_tick(ks, market_w)
         ls_rho_history.append(fitted[2])
 
     rho_std = np.std(ls_rho_history)
@@ -43,6 +42,8 @@ def diagnostic_instability(cfg):
 
 @diagnostic_report("Vanna Jitter")
 def diagnostic_vanna(cfg):
+    calibrator = SVICalibrator(cfg, method="tikhonov")
+
     n_ticks = 100
     ks_market = np.linspace(
         cfg.data.strike_range[0], cfg.data.strike_range[1], cfg.data.n_points
@@ -51,14 +52,11 @@ def diagnostic_vanna(cfg):
     ls_vanna_history = []
     true_vanna = svi_slope(0.0, *true_params)
 
-    bounds = (cfg.model.bounds.lower, cfg.model.bounds.upper)
-    initial_guess = np.array(cfg.model.initial_guess)
-
     for _ in range(n_ticks):
         market_w = forward_model(ks_market, *true_params) + np.random.normal(
             0, cfg.data.noise_level, cfg.data.n_points
         )
-        fitted, _ = calibrate_svi_ls(ks_market, market_w, initial_guess, bounds)
+        fitted = calibrator.calibrate_tick(ks_market, market_w)
         ls_vanna_history.append(svi_slope(0.0, *fitted))
 
     vanna_vol = np.std(ls_vanna_history)
